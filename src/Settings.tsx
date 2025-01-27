@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaArrowLeft, FaSearch, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
@@ -14,6 +14,7 @@ interface Trip {
   totalAmount: number;
   commissionType: 'percentage' | 'fixed';
   type: 'flight' | 'hotel';
+  airlineCode?: string;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -177,6 +178,35 @@ function Settings() {
     );
   };
 
+  const fetchCheckInLink = async (airlineCode: string) => {
+    try {
+      // Mock API call - Replace with actual Amadeus API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const checkInLink = `https://checkin.example.com/${airlineCode}`;
+      return checkInLink;
+    } catch (error) {
+      console.error("Failed to fetch check-in link:", error);
+      return null;
+    }
+  };
+
+  const handleCheckIn = async (trip: Trip) => {
+    if (trip.type === 'flight' && trip.airlineCode) {
+      const checkInLink = await fetchCheckInLink(trip.airlineCode);
+      if (checkInLink) {
+        window.open(checkInLink, '_blank');
+      } else {
+        alert('Could not retrieve check-in link.');
+      }
+    } else {
+      alert('Check-in is only available for flight trips.');
+    }
+  };
+
+  useEffect(() => {
+    setTrips([]);
+  }, []);
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-800' : 'bg-gray-50'} flex flex-col items-center px-4`}>
       {/* Header */}
@@ -271,18 +301,26 @@ function Settings() {
                   <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{trip.clientName}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{trip.route}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{trip.date}</p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                  <div className="mt-2 flex items-center">
+                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ml-2 ${
                       trip.status === 'upcoming' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : (trip.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100')
                     }`}>
                       {trip.status}
                     </span>
                     {trip.status !== 'cancelled' && (
-                      <button onClick={() => handleCancelTrip(trip.id)} className={`text-sm hover:text-red-500 ml-4 ${darkMode ? 'text-gray-400 dark:hover:text-[#bb44f0]' : 'text-gray-500'}`}>
+                      <button onClick={() => handleCancelTrip(trip.id)} className={`text-sm hover:text-red-500 ml-2 ${darkMode ? 'text-gray-400 dark:hover:text-[#bb44f0]' : 'text-gray-500'}`}>
                         Cancel
                       </button>
                     )}
                   </div>
+                  {trip.type === 'flight' && trip.status === 'upcoming' && (
+                      <button
+                        onClick={() => handleCheckIn(trip)}
+                        className={`text-[#4b0086] text-sm hover:underline mt-1 ${darkMode ? 'dark:text-[#bb44f0]' : ''}`}
+                      >
+                        Check-in
+                      </button>
+                    )}
                 </div>
                 <div className="text-right">
                   <p className={`text-gray-600 ${darkMode ? 'dark:text-gray-300' : ''}`}>
