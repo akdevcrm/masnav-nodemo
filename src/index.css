@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.react-datepicker-wrapper {
+  display: flex;
+  flex: 1;
+}
+
+.react-datepicker__input-container {
+  display: flex;
+  flex: 1;
+}
+
+.react-datepicker__input-container input {
+  flex: 1;
+  border-radius: 9999px;
+  padding-right: 30px;
+}
+
+.react-datepicker__input-container::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}

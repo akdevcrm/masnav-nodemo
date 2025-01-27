@@ -1,0 +1,24 @@
+{
+    "name": "workdo/travel-module",
+    "description": "Travel management module for WorkDo CRM",
+    "authors": [
+        {
+            "name": "WorkDo",
+            "email": "support@workdo.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Travel\\": ""
+        }
+    },
+    "require": {
+        "amadeus/client": "^1.0"
+    }
+}

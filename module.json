@@ -1,0 +1,13 @@
+{
+    "name": "Travel",
+    "alias": "travel",
+    "description": "Travel management module for WorkDo CRM",
+    "keywords": ["workdo", "crm", "travel", "booking"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Travel\\Providers\\TravelServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
