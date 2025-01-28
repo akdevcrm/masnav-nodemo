@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlane, FaUser, FaMinus, FaPlus, FaPlusCircle, FaTimesCircle, FaHeart, FaCog, FaMoon, FaSun, FaStar, FaMapMarkerAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
@@ -25,7 +25,7 @@ function App() {
   const [showGuestSelector, setShowGuestSelector] = useState(false);
   const [hotelSearchCheckInDate, setHotelSearchCheckInDate] = useState<Date | null>(null);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
+  const [children, setChildren] = useState(0);  
   const [rooms, setRooms] = useState(tripType === 'hotelSearch' ? 1 : 1);
   const [travelingWithPets, setTravelingWithPets] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([
@@ -33,6 +33,14 @@ function App() {
   ]);
   const [hotelSearchCheckOutDate, setHotelSearchCheckOutDate] = useState<Date | null>(null);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (tripType === 'hotelSearch'|| tripType === 'multiDestination' ) {
+      setRooms(1);
+    } else {
+      setRooms(0);
+    }
+  }, [tripType]);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useTheme();
 
