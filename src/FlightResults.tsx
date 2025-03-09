@@ -5,19 +5,12 @@ import StripePayment from './StripePayment';
 import PayPalPayment from './PayPalPayment';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { useTheme } from './ThemeContext';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import './custom-datepicker.css';
 
-interface FlightResult {
-  id: number;
-  airline: string;
-  departure: string;
-  arrival: string;
-  duration: string;
-  route: string;
-  price: number;
-  type: string;
-  provider: string;
-  isNonstop: boolean;
-}
+// Mock flight results data - Now empty
+const mockFlightResults: any[] = [];
 
 const ITEMS_PER_PAGE = 20;
 
@@ -34,9 +27,11 @@ function FlightResults() {
   const [sortOrder, setSortOrder] = useState('none');
   const [stopsFilter, setStopsFilter] = useState('all');
   const [airlineFilter, setAirlineFilter] = useState('all');
-  const [results, _setResults] = useState<FlightResult[]>([]);
+  const [showCheapestDateModal, setShowCheapestDateModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+
+  const totalPages = Math.ceil(mockFlightResults.length / ITEMS_PER_PAGE);
 
   const getCurrentPageItems = () => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -87,6 +82,16 @@ function FlightResults() {
     setShowPaymentModal(false);
   };
 
+    const handleCheapestDateClick = (item: any) => {
+    setSelectedItem(item);
+    setShowCheapestDateModal(true);
+  };
+
+  const handleCloseCheapestDateModal = () => {
+    setShowCheapestDateModal(false);
+    setSelectedDate(null);
+  };
+
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOrder(e.target.value);
   };
@@ -100,7 +105,12 @@ function FlightResults() {
   };
 
   const applyFilters = () => {
-    let filteredResults = [...results];
+    let filteredResults = [...mockFlightResults];
+
+    // Handle empty array case
+    if (filteredResults.length === 0) {
+      return [];
+    }
 
     // Apply airline filter
     if (airlineFilter !== 'all') {
@@ -167,7 +177,8 @@ function FlightResults() {
     );
   };
 
-  const uniqueAirlines = ['all', ...Array.from(new Set(results.map((flight: any) => flight.airline)))];
+  const uniqueAirlines = mockFlightResults.length > 0 ? ['all', ...Array.from(new Set(mockFlightResults.map(flight => flight.airline)))] : ['all'];
+
 
   return (
     <div className={`min-h-screen flex flex-col items-center px-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
@@ -224,6 +235,12 @@ function FlightResults() {
             Payment Successful!
           </div>
         )}
+
+        {getCurrentPageItems().length === 0 ? (
+          <div className={`text-center text-gray-500 ${darkMode ? 'dark:text-gray-400' : ''}`}>
+            No flights found.
+          </div>
+        ) : (
         <div className="space-y-4">
           {getCurrentPageItems().map((flight: any) => (
             <div key={flight.id} className={`border border-gray-200 rounded-lg p-4 relative hover:border-[#bb44f0] ${darkMode ? 'bg-gray-700 dark:border-gray-600' : 'bg-white'}`}>
@@ -254,17 +271,30 @@ function FlightResults() {
                     </div>
                   </div>
                 </div>
-                <div className="text-center flex flex-col items-center">
-                  <p className={`text-sm text-gray-500 ${darkMode ? 'dark:text-gray-400' : ''}`}>{flight.type}</p>
-                  <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>${flight.price}</p>
-                  <button onClick={() => handlePayment(flight)} className={`mt-2 px-6 py-2 ${darkMode ? 'bg-[#bb44f0] hover:bg-[#bb44f0]/90' : 'bg-[#4b0086] hover:bg-[#4b0086]/90'} text-white rounded-lg transition-colors`}>
-                    Grab Deal
-                  </button>
+                <div className="text-center flex flex-col items-end">
+                  {/* Price and Type Container */}
+                  <div className="mb-2 flex flex-col items-center">
+                    <p className={`text-sm text-gray-500 ${darkMode ? 'dark:text-gray-400' : ''}`}>{flight.type}</p>
+                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>${flight.price}</p>
+                  </div>
+                  {/* Button Container */}
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleCheapestDateClick(flight)}
+                      className={`px-4 py-2 text-sm rounded-lg transition-colors ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+                    >
+                      Cheapest Date
+                    </button>
+                    <button onClick={() => handlePayment(flight)} className={`px-6 py-2 rounded-lg transition-colors ${darkMode ? 'bg-[#bb44f0] hover:bg-[#bb44f0]/90 text-white' : 'bg-[#4b0086] hover:bg-[#4b0086]/90 text-white'}`}>
+                      Grab Deal
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        )}
 
         {/* Pagination */}
         {renderPagination()}
@@ -291,6 +321,37 @@ function FlightResults() {
                 <PayPalPayment onSuccess={handlePaymentSuccess} />
               </PayPalScriptProvider>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cheapest Date Modal */}
+      {showCheapestDateModal && selectedItem && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center z-50">
+          <div className={`p-8 rounded-lg shadow-lg w-full max-w-md ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Cheapest Date for {selectedItem.airline}</h2>
+              <button onClick={handleCloseCheapestDateModal} className={`text-gray-500 hover:text-gray-700 ${darkMode ? 'dark:text-gray-400' : ''}`}>
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="mb-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                inline
+                calendarClassName={darkMode ? 'react-datepicker--dark' : 'react-datepicker--light'}
+              />
+            </div>
+            <div className="mb-4">
+              <p className={`text-gray-800 ${darkMode ? 'text-white' : ''}`}>Selected Date: {selectedDate ? selectedDate.toLocaleDateString() : 'None'}</p>
+            </div>
+            <button
+              onClick={handleCloseCheapestDateModal}
+              className={`mt-4 px-6 py-2 ${darkMode ? 'bg-[#bb44f0] hover:bg-[#bb44f0]/90' : 'bg-[#4b0086] hover:bg-[#4b0086]/90'} text-white rounded-lg transition-colors`}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
