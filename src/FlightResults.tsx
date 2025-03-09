@@ -12,7 +12,7 @@ import './custom-datepicker.css';
 // Mock flight results data - Now empty
 const mockFlightResults: any[] = [];
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 40;
 
 function FlightResults() {
   const navigate = useNavigate();
