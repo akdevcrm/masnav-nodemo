@@ -21,7 +21,7 @@ interface HotelResult {
   features: string[];
 }
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 30;
 
 function HotelResults() {
   const navigate = useNavigate();
